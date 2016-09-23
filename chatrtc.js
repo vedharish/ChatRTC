@@ -71,7 +71,7 @@ var ChatRTC = {
     var conn = new WebRTC();
     ChatRTC.peers[source] = conn;
     conn.receiveDC(function(dc){
-      ChatRTC.handlerDC(dc, member);
+      ChatRTC.handlerDC(dc, source);
     });
     conn.receiveOfferAndGetAnswer(offer, function(answer){
       console.log(answer);
