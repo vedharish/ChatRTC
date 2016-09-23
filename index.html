@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>ChatRTC</title>
+
+      <script src="https://webrtc.github.io/adapter/adapter-latest.js" type="text/javascript"></script>
+      <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+      <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js" type="text/javascript"></script>
+
+      <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+      <style type="text/css">
+        .hidden {display: none;}
+      </style>
+  </head>
+
+  <body style="margin: 0 50px; position: fixed; top: 0; bottom: 0; right: 0; left: 0;">
+      <h1>ChatRTC</h1>
+
+      <div id="sourcePeer">
+        <div id="welcomePeer" class="hidden"><h3>Welcome <span id="sourceName"></span></h3></div>
+        <div id="enterName" class="hidden">
+          <form class="form-inline" onSubmit="return ChatRTC.initName();" action="">
+            <input type="text" id="nameBox" placeholder="Type your name here" style="width: 200px; padding: 5.5px;">
+            <button type="submit" id="nameBtn" class="btn btn-success">Start</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="messageContent" class="hidden" style="margin: 20px auto;">
+        <fieldset class="well" style="margin-bottom: 8px; width: 75%;">
+          <div class="text-info" id="chatlog" style="height:40em; overflow:auto;"></div>
+        </fieldset>
+        <form class="form-inline" onSubmit="return ChatRTC.onMessage();" action="">
+          <input type="text" id="messageBox" placeholder="Type your message here" style="width: 75%; padding: 5.5px;">
+          <button type="submit" class="hidden"></button>
+        </form>
+      </div>
+
+
+      <script type="text/javascript">
+        var ChatRTC = {
+          initName: function(){
+            localStorage.sourcePeer = $("#nameBox").val();
+            ChatRTC.uiName();
+            return false;
+          },
+
+          uiName: function(){
+            $("#sourceName").text(localStorage.sourcePeer);
+            $("#welcomePeer").removeClass("hidden");
+            $("#messageContent").removeClass("hidden");
+            $("#enterName").addClass("hidden");
+          },
+
+          onMessage: function(){
+            var message = $("#messageBox").val();
+            var elem = $("#chatlog");
+            elem.append("["+localStorage.sourcePeer+"] " + message + '<br />');
+            $("#messageBox").val('');
+            elem.scrollTop(elem.get(0).scrollHeight);
+            return false;
+          }
+        }
+
+
+        $(document).ready(function(){
+          if(!localStorage.sourcePeer){
+            $("#enterName").removeClass("hidden");
+          }
+          else {
+            ChatRTC.uiName();
+          }
+        });
+      </script>
+  </body>
+</html>
