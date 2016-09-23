@@ -46,6 +46,9 @@ var ChatRTC = {
 
     chan.onmessage = function(e) {
       console.log("data channel received message", e.data);
+      if(e.data == "connected")
+        $("#member-" + member + ">.status").text("Connected");
+
       $("#chatlog").append("["+member+"] " + e.data + '<br />');
     }
   },
