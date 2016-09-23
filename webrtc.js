@@ -13,10 +13,10 @@ function WebRTC() {
 
   var peer = new RTCPeerConnection(ice);
   peer.onicecandidate = function(event) {
-    console.log(event, that.onOffer);
+    console.log(event, that.onReady);
     if (event.candidate === null) {
       var sdp = peer.localDescription;
-      if(that.onOffer) that.onOffer(sdp);
+      if(that.onReady) that.onReady(sdp);
     }
   };
 
@@ -24,6 +24,12 @@ function WebRTC() {
     createDC: function(channelName) {
       var dc = peer.createDataChannel(channelName, {reliable: true});
       return dc;
+    },
+
+    receiveDC: function(cb){
+      peer.ondatachannel = function(e){
+        cb(e.channel);
+      }
     },
 
     createOffer: function(cb) {
@@ -34,7 +40,27 @@ function WebRTC() {
         console.log("error", e)
       }, mediaConstraints);
 
-      that.onOffer = cb;
+      that.onReady = cb;
+    },
+
+    receiveOfferAndGetAnswer: function(offer, cb){
+      peer.setRemoteDescription(offer, function(){
+        console.log("Starting answer");
+        peer.createAnswer(function(answer){
+          console.log("Done answer", answer);
+          peer.setLocalDescription(answer, function(){
+            console.log("Answer", answer);
+          });
+        }, function(e){
+          console.log("error", e);
+        });
+      });
+
+      that.onReady = cb;
+    },
+
+    receiveAnswer: function(answer){
+      peer.setRemoteDescription(answer);
     }
   }
 }
