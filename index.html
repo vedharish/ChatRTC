@@ -7,7 +7,7 @@
       <script src="https://webrtc.github.io/adapter/adapter-latest.js" type="text/javascript"></script>
       <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
-      <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js" type="text/javascript"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js" type="text/javascript"></script>
 
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
       <style type="text/css">
@@ -29,17 +29,70 @@
       </div>
 
       <div id="messageContent" class="hidden" style="margin: 20px auto;">
-        <fieldset class="well" style="margin-bottom: 8px; width: 75%;">
-          <div class="text-info" id="chatlog" style="height:40em; overflow:auto;"></div>
-        </fieldset>
-        <form class="form-inline" onSubmit="return ChatRTC.onMessage();" action="">
-          <input type="text" id="messageBox" placeholder="Type your message here" style="width: 75%; padding: 5.5px;">
-          <button type="submit" class="hidden"></button>
-        </form>
+        <div class="pull-right" style="width: 24%; height: 40em;">
+          <fieldset class="well" style="margin-bottom: 8px;">
+            <div class="text-info" id="memberlog" style="height:40em; overflow:auto;"></div>
+          </fieldset>
+          <form class="form-inline" onSubmit="return ChatRTC.onMember();" action="">
+            <input type="text" id="memberBox" placeholder="Invite friend" style="width: 100%; padding: 5.5px;">
+            <button type="submit" class="hidden"></button>
+          </form>
+        </div>
+        <div style="width: 74%; height: 40em;">
+          <fieldset class="well" style="margin-bottom: 8px;">
+            <div class="text-info" id="chatlog" style="height:40em; overflow:auto;"></div>
+          </fieldset>
+          <form class="form-inline" onSubmit="return ChatRTC.onMessage();" action="">
+            <input type="text" id="messageBox" placeholder="Type your message here" style="width: 100%; padding: 5.5px;">
+            <button type="submit" class="hidden"></button>
+          </form>
+        </div>
       </div>
 
 
       <script type="text/javascript">
+        function WebRTC(){
+          var that = this;
+          var ice = {"iceServers": [
+            {"url": "stun:stun.l.google.com:19302"}
+          ]};
+
+          var mediaConstraints = { 
+            mandatory: {
+                OfferToReceiveAudio: false,
+                OfferToReceiveVideo: false
+            }
+          };
+
+          var peer = new RTCPeerConnection(ice);
+          peer.onicecandidate = function(event) {
+            console.log(event, that.onOffer);
+            if (event.candidate === null) {
+              var sdp = peer.localDescription;
+              if(that.onOffer) that.onOffer(sdp);
+            }
+          };
+
+          return {
+            createDC: function(channelName){
+              var dc = peer.createDataChannel(channelName, {reliable: true});
+              return dc;
+            },
+
+            createOffer: function(cb){
+              peer.createOffer(function(desc){
+                console.log("Started offer creation", peer.localDescription);
+                peer.setLocalDescription(desc, function () {}, function(){});
+              }, function(e){
+                console.log("error", e)
+              }, mediaConstraints);
+
+              that.onOffer = cb;
+            }
+          }
+
+        }
+
         var ChatRTC = {
           initName: function(){
             localStorage.sourcePeer = $("#nameBox").val();
@@ -61,9 +114,44 @@
             $("#messageBox").val('');
             elem.scrollTop(elem.get(0).scrollHeight);
             return false;
+          },
+
+          onMember: function(){
+            var member = $("#memberBox").val();
+            var elem = $("#memberlog");
+            elem.prepend('<div style="margin: 8px auto;" id="member-'+member+'"><strong>'+member+'</strong><br/><span class="status small">Connecting</span></div>');
+            $("#memberBox").val('');
+            ChatRTC.connectToMember(member);
+            return false;
+          },
+
+          handlerDC: function(chan, member){
+            chan.onerror = function(error) {  }
+            chan.onclose = function() {  }
+
+            chan.onopen = function(evt) {
+              chan.send("connected");
+            }
+
+            chan.onmessage = function(msg) {
+              elem.append("["+member+"] " + msg + '<br />');
+            }
+          },
+
+          connectToMember: function(member){
+            var conn = new WebRTC();
+            var dc = conn.createDC();
+            ChatRTC.handlerDC(dc, member);
+            conn.createOffer(function(offer){
+              console.log(offer);
+              ChatRTC.socket.emit('message', {connectHash: member, type: "offer", data: offer});
+            });
+          },
+
+          onSocketIOMessage: function(data){
+            console.log(data);
           }
         }
-
 
         $(document).ready(function(){
           if(!localStorage.sourcePeer){
@@ -72,6 +160,14 @@
           else {
             ChatRTC.uiName();
           }
+
+          ChatRTC.socket = io('http://5047cc02.ngrok.io');
+          ChatRTC.socket.on('connect', function(){
+            console.log("connected");
+          })
+          ChatRTC.socket.on('message', function(data){
+            ChatRTC.onSocketIOMessage(data);
+          })
         });
       </script>
   </body>
