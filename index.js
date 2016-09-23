@@ -6,7 +6,7 @@ $(document).ready(function(){
     ChatRTC.uiName();
   }
 
-  ChatRTC.socket = io('http://5047cc02.ngrok.io');
+  ChatRTC.socket = io('https://5047cc02.ngrok.io');
   ChatRTC.socket.on('connect', function(){
     console.log("connected");
     ChatRTC.socket.emit('message', {connectHash: localStorage.sourcePeer, type: "init"});
