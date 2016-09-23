@@ -19,7 +19,13 @@
       <h1>ChatRTC</h1>
 
       <div id="sourcePeer">
-        <div id="welcomePeer" class="hidden"><h3>Welcome <span id="sourceName"></span></h3></div>
+        <div id="welcomePeer" class="hidden">
+          <h3 style="width: 80%; float: left">Welcome <span id="sourceName"></span></h3>
+          <div style="float: right; width: 10%">
+            <button class="btn btn-warning" onClick="User.change()">Edit</button>
+            <button class="btn btn-danger" onClick="User.logout()">Logout</button>
+          </div>
+        </div>
         <div id="enterName" class="hidden">
           <form class="form-inline" onSubmit="return ChatRTC.initName();" action="">
             <input type="text" id="nameBox" placeholder="Type your name here" style="width: 200px; padding: 5.5px;">
@@ -40,6 +46,22 @@
 
 
       <script type="text/javascript">
+        var User = {
+          logout: function() {
+            delete localStorage.sourcePeer;
+            $("#nameBox").val('');
+            $("#welcomePeer").addClass("hidden");
+            $("#messageContent").addClass("hidden");
+            $("#enterName").removeClass("hidden");
+          },
+
+          change: function() {
+            $("#sourceName").val(localStorage.sourcePeer);
+            $("#welcomePeer").addClass("hidden");
+            $("#enterName").removeClass("hidden");
+          }
+        }
+
         var ChatRTC = {
           initName: function(){
             localStorage.sourcePeer = $("#nameBox").val();
