@@ -60,7 +60,7 @@ function WebRTC() {
     },
 
     receiveAnswer: function(answer){
-      peer.setRemoteDescription(answer);
+      peer.setRemoteDescription(answer, function () {}, function(){});
     }
   }
 }

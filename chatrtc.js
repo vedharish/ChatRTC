@@ -21,17 +21,20 @@ var ChatRTC = {
     elem.append("["+localStorage.sourcePeer+"] " + message + '<br />');
     $("#messageBox").val('');
     elem.scrollTop(elem.get(0).scrollHeight);
-    ChatRTC.sendToDC(message);
+    ChatRTC.sendToDC(message, "message");
     return false;
   },
 
   onMember: function(){
     var member = $("#memberBox").val();
-    var elem = $("#memberlog");
-    elem.prepend('<div style="margin: 8px auto;" id="member-'+member+'"><strong>'+member+'</strong><br/><span class="status small">Connecting</span></div>');
+    ChatRTC.addmember(member);
     $("#memberBox").val('');
     ChatRTC.connectToMember(member);
     return false;
+  },
+
+  addmember: function(member){
+    $("#memberlog").prepend('<div style="margin: 8px auto;" id="member-'+member+'"><strong>'+member+'</strong><br/><span class="status small">Connecting</span></div>');
   },
 
   handlerDC: function(chan, member){
@@ -41,21 +44,33 @@ var ChatRTC = {
 
     chan.onopen = function(evt) {
       console.log("data channel opened");
-      chan.send("connected");
+      chan.send(JSON.stringify({data: "connected", type: "message"}));
+      ChatRTC.sendToDC(member, "member");
     }
 
     chan.onmessage = function(e) {
       console.log("data channel received message", e.data);
-      if(e.data == "connected")
-        $("#member-" + member + ">.status").text("Connected");
+      var data = JSON.parse(e.data);
 
-      $("#chatlog").append("["+member+"] " + e.data + '<br />');
+      switch(data.type){
+        case "message":
+          if(data.data == "connected")
+            $("#member-" + member + ">.status").text("Connected");
+
+          $("#chatlog").append("["+member+"] " + data.data + '<br />');
+          break;
+
+        case "member":
+          if(!ChatRTC[data.data] && data.data != localStorage.sourcePeer)
+            ChatRTC.connectToMember(data.data);
+          break;
+      }
     }
   },
 
-  sendToDC: function(message){
+  sendToDC: function(message, type){
     for(var i in ChatRTC.dcs){
-      ChatRTC.dcs[i].send(message);
+      ChatRTC.dcs[i].send(JSON.stringify({data: message, type: type}));
     }
   },
 
@@ -73,6 +88,7 @@ var ChatRTC = {
   receiveRequestFromMember: function(offer, member, source){
     var conn = new WebRTC();
     ChatRTC.peers[source] = conn;
+    ChatRTC.addmember(source);
     conn.receiveDC(function(dc){
       ChatRTC.handlerDC(dc, source);
     });
