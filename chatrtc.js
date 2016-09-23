@@ -61,8 +61,10 @@ var ChatRTC = {
           break;
 
         case "member":
-          if(!ChatRTC.peers[data.data] && data.data != localStorage.sourcePeer)
+          if(!ChatRTC.peers[data.data] && data.data != localStorage.sourcePeer){
+            ChatRTC.addmember(data.data);
             ChatRTC.connectToMember(data.data);
+          }
           break;
       }
     }
