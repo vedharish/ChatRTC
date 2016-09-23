@@ -21,6 +21,7 @@ var ChatRTC = {
     elem.append("["+localStorage.sourcePeer+"] " + message + '<br />');
     $("#messageBox").val('');
     elem.scrollTop(elem.get(0).scrollHeight);
+    ChatRTC.sendToDC(message);
     return false;
   },
 
@@ -46,6 +47,12 @@ var ChatRTC = {
     chan.onmessage = function(e) {
       console.log("data channel received message", e.data);
       $("#chatlog").append("["+member+"] " + e.data + '<br />');
+    }
+  },
+
+  sendToDC: function(message){
+    for(var i in ChatRTC.dcs){
+      ChatRTC.dcs[i].send(message);
     }
   },
 
