@@ -4,15 +4,12 @@
       <meta charset="utf-8">
       <title>ChatRTC</title>
 
-      <script src="https://webrtc.github.io/adapter/adapter-latest.js" type="text/javascript"></script>
-      <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js" type="text/javascript"></script>
+      <script src="public/js/adapter-latest.js" type="text/javascript"></script>
+      <script src="public/js/jquery-3.1.1.min.js" type="text/javascript"></script>
+      <script src="public/js/bootstrap.min.js" type="text/javascript"></script>
+      <script src="public/js/socket.io.min.js" type="text/javascript"></script>
 
-      <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-      <style type="text/css">
-        .hidden {display: none;}
-      </style>
+      <link href="public/css/bootstrap.min.css" rel="stylesheet">
   </head>
 
   <body style="margin: 0 50px; position: fixed; top: 0; bottom: 0; right: 0; left: 0;">
@@ -56,140 +53,9 @@
       </div>
 
 
-      <script type="text/javascript">
-        var User = {
-          logout: function() {
-            delete localStorage.sourcePeer;
-            $("#nameBox").val('');
-            $("#welcomePeer").addClass("hidden");
-            $("#messageContent").addClass("hidden");
-            $("#enterName").removeClass("hidden");
-          },
-
-          change: function() {
-            $("#sourceName").val(localStorage.sourcePeer);
-            $("#welcomePeer").addClass("hidden");
-            $("#enterName").removeClass("hidden");
-          }
-        }
-        function WebRTC(){
-          var that = this;
-          var ice = {"iceServers": [
-            {"url": "stun:stun.l.google.com:19302"}
-          ]};
-
-          var mediaConstraints = { 
-            mandatory: {
-                OfferToReceiveAudio: false,
-                OfferToReceiveVideo: false
-            }
-          };
-
-          var peer = new RTCPeerConnection(ice);
-          peer.onicecandidate = function(event) {
-            console.log(event, that.onOffer);
-            if (event.candidate === null) {
-              var sdp = peer.localDescription;
-              if(that.onOffer) that.onOffer(sdp);
-            }
-          };
-
-          return {
-            createDC: function(channelName){
-              var dc = peer.createDataChannel(channelName, {reliable: true});
-              return dc;
-            },
-
-            createOffer: function(cb){
-              peer.createOffer(function(desc){
-                console.log("Started offer creation", peer.localDescription);
-                peer.setLocalDescription(desc, function () {}, function(){});
-              }, function(e){
-                console.log("error", e)
-              }, mediaConstraints);
-
-              that.onOffer = cb;
-            }
-          }
-        }
-
-        var ChatRTC = {
-          initName: function(){
-            localStorage.sourcePeer = $("#nameBox").val();
-            ChatRTC.uiName();
-            return false;
-          },
-
-          uiName: function(){
-            $("#sourceName").text(localStorage.sourcePeer);
-            $("#welcomePeer").removeClass("hidden");
-            $("#messageContent").removeClass("hidden");
-            $("#enterName").addClass("hidden");
-          },
-
-          onMessage: function(){
-            var message = $("#messageBox").val();
-            var elem = $("#chatlog");
-            elem.append("["+localStorage.sourcePeer+"] " + message + '<br />');
-            $("#messageBox").val('');
-            elem.scrollTop(elem.get(0).scrollHeight);
-            return false;
-          },
-
-          onMember: function(){
-            var member = $("#memberBox").val();
-            var elem = $("#memberlog");
-            elem.prepend('<div style="margin: 8px auto;" id="member-'+member+'"><strong>'+member+'</strong><br/><span class="status small">Connecting</span></div>');
-            $("#memberBox").val('');
-            ChatRTC.connectToMember(member);
-            return false;
-          },
-
-          handlerDC: function(chan, member){
-            chan.onerror = function(error) {  }
-            chan.onclose = function() {  }
-
-            chan.onopen = function(evt) {
-              chan.send("connected");
-            }
-
-            chan.onmessage = function(msg) {
-              elem.append("["+member+"] " + msg + '<br />');
-            }
-          },
-
-          connectToMember: function(member){
-            var conn = new WebRTC();
-            var dc = conn.createDC();
-            ChatRTC.handlerDC(dc, member);
-            conn.createOffer(function(offer){
-              console.log(offer);
-              ChatRTC.socket.emit('message', {connectHash: member, type: "offer", data: offer});
-            });
-          },
-
-          onSocketIOMessage: function(data){
-            console.log(data);
-          }
-        }
-
-        $(document).ready(function(){
-          if(!localStorage.sourcePeer){
-            $("#enterName").removeClass("hidden");
-          }
-          else {
-            ChatRTC.uiName();
-          }
-
-          ChatRTC.socket = io('http://5047cc02.ngrok.io');
-          ChatRTC.socket.on('connect', function(){
-            console.log("connected");
-            ChatRTC.socket.emit('message', {connectHash: localStorage.sourcePeer, type: "init"});
-          })
-          ChatRTC.socket.on('message', function(data){
-            ChatRTC.onSocketIOMessage(data);
-          })
-        });
-      </script>
+      <script type="text/javascript" src="user.js"></script>
+      <script type="text/javascript" src="webrtc.js"></script>
+      <script type="text/javascript" src="chatrtc.js"></script>
+      <script type="text/javascript" src="index.js"></script>
   </body>
 </html>
