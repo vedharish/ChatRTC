@@ -16,9 +16,7 @@ function WebRTC() {
   var constraints = {
     audio: true, 
     video: { 
-      mandatory: {  
-        width: { min: 320 },
-        height: { min: 180 }
+      mandatory: {
       },
       optional: [  
         { width: { max: 1280 }},
@@ -83,6 +81,7 @@ function WebRTC() {
         var remoteVideo = document.getElementById('localVideo');
         remoteVideo.src = window.URL.createObjectURL(stream);
         that.localStream = stream;
+        peer.addStream(stream);
 
         peer.setRemoteDescription(that.offer, function(){
           console.log("Starting answer");
