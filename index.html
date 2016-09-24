@@ -12,10 +12,19 @@
       <link href="public/css/bootstrap.min.css" rel="stylesheet">
   </head>
 
-  <body style="margin: 0 50px; top: 0; bottom: 0; right: 0; left: 0;">
-      <h1>ChatRTC</h1>
+  <body style="margin: 0 50px; position: fixed; top: 0; bottom: 0; right: 0; left: 0;">
+      <div id="chatTitle" style="height: 80px">
+        <div style="float: left; width: 90%;">
+          <h1 id="chatTitleChatRTC">ChatRTC</h1>
+          <h1 id="chatTitleVideoRTC" class="hidden">VideoRTC</h1>
+        </div>
+        <div style="float: left; margin: 24px auto;">
+          <button id="showChatContent" class="btn btn-warning hidden" onClick="User.switchToChat()">Switch to ChatRTC</button>
+          <button id="showVideoContent" class="btn btn-warning" onClick="User.switchToVideo()">Switch to VideoRTC</button>
+        </div>
+      </div>
 
-      <div id="sourcePeer">
+      <div id="sourcePeer" style="height: 40px">
         <div id="welcomePeer" class="hidden">
           <h3 style="width: 80%; float: left; margin: 8px 0 16px;">Welcome <span id="sourceName"></span></h3>
           <div style="float: right; width: 128px;">
@@ -31,26 +40,30 @@
         </div>
       </div>
 
-      <video id="video" autoplay></video>
-      <video id="localVideo" autoplay></video>
       <div id="messageContent" class="hidden" style="margin: 20px auto;">
-        <div class="pull-right" style="width: 24%; height: 40em;">
-          <fieldset class="well" style="margin-bottom: 8px;">
-            <div class="text-info" id="memberlog" style="height:40em; overflow:auto;"></div>
-          </fieldset>
-          <form class="form-inline" onSubmit="return ChatRTC.onMember();" action="">
-            <input type="text" id="memberBox" placeholder="Invite friend" style="width: 100%; padding: 5.5px;">
-            <button type="submit" class="hidden"></button>
-          </form>
+        <div id="videoContent" class="hidden">
+          <video id="video" autoplay></video>
+          <video id="localVideo" autoplay></video>
         </div>
-        <div style="width: 74%; height: 40em;">
-          <fieldset class="well" style="margin-bottom: 8px;">
-            <div class="text-info" id="chatlog" style="height:40em; overflow:auto;"></div>
-          </fieldset>
-          <form class="form-inline" onSubmit="return ChatRTC.onMessage();" action="">
-            <input type="text" id="messageBox" placeholder="Type your message here" style="width: 100%; padding: 5.5px;">
-            <button type="submit" class="hidden"></button>
-          </form>
+        <div id="chatContent">
+          <div class="pull-right" style="width: 24%; height: 40em;">
+            <fieldset class="well" style="margin-bottom: 8px;">
+              <div class="text-info" id="memberlog" style="height:40em; overflow:auto;"></div>
+            </fieldset>
+            <form class="form-inline" onSubmit="return ChatRTC.onMember();" action="">
+              <input type="text" id="memberBox" placeholder="Invite friend" style="width: 100%; padding: 5.5px;">
+              <button type="submit" class="hidden"></button>
+            </form>
+          </div>
+          <div style="width: 74%; height: 40em;">
+            <fieldset class="well" style="margin-bottom: 8px;">
+              <div class="text-info" id="chatlog" style="height:40em; overflow:auto;"></div>
+            </fieldset>
+            <form class="form-inline" onSubmit="return ChatRTC.onMessage();" action="">
+              <input type="text" id="messageBox" placeholder="Type your message here" style="width: 100%; padding: 5.5px;">
+              <button type="submit" class="hidden"></button>
+            </form>
+          </div>
         </div>
       </div>
 
