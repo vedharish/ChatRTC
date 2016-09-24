@@ -43,7 +43,6 @@ var ChatRTC = {
       console.log("data channel opened");
       chan.send("connected");
     }
-
     chan.onmessage = function(e) {
       console.log("data channel received message", e.data);
       if(e.data == "connected")
