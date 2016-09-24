@@ -102,12 +102,7 @@ function WebRTC() {
     },
 
     receiveAnswer: function(answer){
-      //chan.onaddstream = function(e) {
-      //  console.log("ON ADD STREAM ", e);
-      //  var remoteVideo = document.getElementById('video');
-      //  remoteVideo.src = window.URL.createObjectURL(e.stream);
-      //}
-      peer.setRemoteDescription(answer);
+      peer.setRemoteDescription(answer, function () {}, function(){});
     }
   }
 }
